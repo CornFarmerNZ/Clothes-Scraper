@@ -43,7 +43,7 @@ public class MainService {
 			".nz/buy/114182/revolution-skincare-2-5-glycolic-acid-tonic-200ml");
 	List<String> postieUrls = List.of("https://www.postie.co.nz/womens-midi-t-shirt-dress-816974-black");
 
-	@Scheduled(cron = "0 0 12 * * *", zone = "Pacific/Auckland")
+	@Scheduled(cron = "* * * 1 * *")
 	public void start() throws InterruptedException {
 		List<Item> allItems = new ArrayList<>();
 		allItems.addAll(parsingService.getItems(kmartUrls, Store.KMART.toString()));
