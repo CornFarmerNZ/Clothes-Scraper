@@ -25,7 +25,7 @@ public class MainService {
 	@Autowired
 	FileWritingService fileWritingService;
 
-	public static boolean alreadyRanToday = true;
+	public static boolean alreadyRanToday = false;
 
 
 	List<String> kmartUrls = List.of("https://www.kmart.co.nz/product/short-sleeve-twist-front-midi-dress-s159474" +
