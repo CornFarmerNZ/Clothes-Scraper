@@ -13,6 +13,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.Resource;
 
@@ -20,6 +21,7 @@ import javax.annotation.Resource;
 @Log4j2
 @EnableConfigurationProperties({AppConfig.class})
 @SpringBootApplication
+@EnableScheduling
 public class ClothesApplication implements CommandLineRunner {
 
 	@Resource
@@ -44,7 +46,7 @@ public class ClothesApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		applicationContext.start();
-		mainService.run();
+		mainService.start();
 	}
 
 }
