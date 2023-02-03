@@ -45,8 +45,9 @@ public class ClothesApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		applicationContext.start();
+//		applicationContext.start();
 		mainService.start();
+		applicationContext.close();
 	}
 
 }

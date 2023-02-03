@@ -1,0 +1,11 @@
+META-INF/spring-configuration-metadata.json
+org/CornFarmerNZ/constants/Store.class
+org/CornFarmerNZ/service/MainService.class
+org/CornFarmerNZ/config/AppConfig.class
+org/CornFarmerNZ/model/Item$ItemBuilder.class
+org/CornFarmerNZ/config/ClothesConfig.class
+org/CornFarmerNZ/service/ParsingService.class
+org/CornFarmerNZ/model/Item.class
+org/CornFarmerNZ/repository/ItemRepository.class
+org/CornFarmerNZ/service/FileWritingService.class
+org/CornFarmerNZ/ClothesApplication.class

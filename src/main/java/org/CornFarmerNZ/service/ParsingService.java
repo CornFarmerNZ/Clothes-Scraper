@@ -8,12 +8,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -38,6 +39,13 @@ public class ParsingService {
 	@Autowired
 	HttpClient httpClient;
 
+	private static RemoteWebDriver driver;
+
+	@PostConstruct
+	private void init() {
+		driver = new RemoteWebDriver(chromeOptions);
+	}
+
 
 	public List<Item> getItems(List<String> urls, String strategy) throws InterruptedException {
 		List<Item> items = new ArrayList<>();
@@ -56,11 +64,12 @@ public class ParsingService {
 	}
 
 	private List<Item> strategyPostie(List<String> urls) throws InterruptedException {
-		return chromeDriverGetItem(".product-header__heading", ".product-header__price.price", urls);
+		return chromeDriverGetItem(".product-header__heading", ".product-header__price.price", "", urls);
 	}
 
 	private List<Item> strategyKmart(List<String> urls) throws InterruptedException {
-		return chromeDriverGetItem(".sc-bdvvtL.cTxaVe.product-title", ".sc-bdvvtL.bjrtyU.product-price-large", urls);
+		return chromeDriverGetItem(".sc-bdvvtL.cTxaVe.product-title", ".sc-bdvvtL.bjrtyU.product-price-large", "",
+				urls);
 	}
 
 	private List<Item> strategyTheWarehouse(List<String> urls) {
@@ -68,7 +77,8 @@ public class ParsingService {
 	}
 
 	private List<Item> strategyGlassons(List<String> urls) throws InterruptedException {
-		return chromeDriverGetItem(".product-summary__heading", ".product-summary__price.s-price", urls);
+		return chromeDriverGetItem(".product-summary__heading", ".product-summary__price.s-price",
+				".lazyautosizes.lazyloaded", urls);
 	}
 
 	private List<Item> strategyChemistWarehouse(List<String> urls) {
@@ -169,43 +179,51 @@ public class ParsingService {
 		return items;
 	}
 
-	private List<Item> chromeDriverGetItem(String cssTitle, String cssPrice,
+	private List<Item> chromeDriverGetItem(String cssTitle, String cssPrice, String cssImage,
 										   List<String> urls) throws InterruptedException {
 
 		List<Item> items = new ArrayList<>();
-		System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver108");
-		ChromeDriver driver = new ChromeDriver(chromeOptions);
-		driver
-				.manage()
-				.window()
-				.maximize();
+//		System.setProperty("webdriver.chrome.driver", "./chromedriver");
+
+//		ChromeDriverService service = ChromeDriverService.createDefaultService();
+
 		for (String url : urls) {
 			Item item = new Item();
 			driver.get(url);
-			Thread.sleep(random.nextInt(3502, 7507));
+			Thread.sleep(random.nextInt(1502, 3507));
 			List<WebElement> title = new ArrayList<>(driver.findElements(By.cssSelector(cssTitle)));
 			List<WebElement> price = new ArrayList<>(driver.findElements(By.cssSelector(cssPrice)));
-			item.setName(StringUtils.isNotBlank(title
-					.get(0)
-					.getText()) ? title
-					.get(0)
-					.getText() : "n/a");
-			item.setPrice(StringUtils.isNotBlank(price
-					.get(0)
-					.getText()
-					.substring(1)) ? price
-					.get(0)
-					.getText()
-					.substring(price
-							.get(0)
-							.getText()
-							.lastIndexOf("$") + 1) : "0.00");
+			List<WebElement> images = StringUtils.isNotBlank(cssImage) ?
+					new ArrayList<>(driver.findElements(By.cssSelector(cssImage))) : new ArrayList<>();
+			if (!CollectionUtils.isEmpty(title)) {
+				item.setName(StringUtils.isNotBlank(title
+						.get(0)
+						.getText()) ? title
+						.get(0)
+						.getText() : "n/a");
+			}
+			if (!CollectionUtils.isEmpty(price)) {
+				item.setPrice(StringUtils.isNotBlank(price
+						.get(0)
+						.getText()
+						.substring(1)) ? price
+						.get(0)
+						.getText()
+						.substring(price
+								.get(0)
+								.getText()
+								.lastIndexOf("$") + 1) : "0.00");
+			}
+			if (!CollectionUtils.isEmpty(images)) {
+				item.setItemImageUrl(images
+						.get(0)
+						.getAttribute("src"));
+			}
 			item.setUrl(url);
 			System.out.println(item.toString());
 			items.add(item);
 			Thread.sleep(random.nextInt(1402, 1505));
 		}
-		driver.close();
 		return items;
 	}
 
