@@ -47,10 +47,13 @@ public class MainService {
 			".glassons.com/nz/p/parachute-pant-pw55457nyl-white", "https://www.glassons" +
 			".com/nz/p/cargo-parachute-pant-pw91723nyl-black", "https://www.glassons" +
 			".com/nz/p/cargo-parachute-pant-pw91723nyl-gun-smoke", "https://www.glassons" +
-			".com/nz/p/cargo-parachute-pant-pw91723nyl-when-in-sprout", "https://www.glassons.com/nz/p/parachute-pant-pw55457nyl-sourdough");
+			".com/nz/p/cargo-parachute-pant-pw91723nyl-when-in-sprout", "https://www.glassons" +
+			".com/nz/p/parachute-pant-pw55457nyl-sourdough", "https://www.glassons.com/nz/p/low-rise-cotton-cargo-pant-pw54095cot-black");
 	List<String> chemistWarehouseUrls = List.of("https://www.chemistwarehouse.co" +
 			".nz/buy/114182/revolution-skincare-2-5-glycolic-acid-tonic-200ml");
 	List<String> postieUrls = List.of("https://www.postie.co.nz/womens-midi-t-shirt-dress-816974-black");
+	List<String> ippondoUrls = List.of("https://ippondonz.co.nz/?product=cowbrand-additive-free-milky-body-soap-550ml", "https://ippondonz.co.nz/?product=milky-body-soap-gentle-soap-scent-with-pump-550ml");
+	List<String> daikokuUrls = List.of("https://www.daikokunz.com/product/biore-u-moisturizing-body-wash/");
 
 	@Scheduled(cron = "0 0 12 * * *", zone = "Pacific/Auckland")
 	public void start() throws InterruptedException {
@@ -62,6 +65,8 @@ public class MainService {
 		//api calls
 		allItems.addAll(parsingService.getItems(theWarehouseUrls, Store.THE_WAREHOUSE.toString()));
 		allItems.addAll(parsingService.getItems(chemistWarehouseUrls, Store.CHEMIST_WAREHOUSE.toString()));
+		allItems.addAll(parsingService.getItems(ippondoUrls, Store.IPPONDO.toString()));
+		allItems.addAll(parsingService.getItems(daikokuUrls, Store.DAIKOKU.toString()));
 
 //		fileWritingService.writeToCsv(allItems);
 		log.info(allItems);

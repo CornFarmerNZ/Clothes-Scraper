@@ -1,0 +1,11 @@
+{
+  "groups": [
+    {
+      "name": "app",
+      "type": "org.CornFarmerNZ.config.AppConfig",
+      "sourceType": "org.CornFarmerNZ.config.AppConfig"
+    }
+  ],
+  "properties": [],
+  "hints": []
+}

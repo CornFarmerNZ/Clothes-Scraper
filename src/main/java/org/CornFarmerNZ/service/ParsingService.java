@@ -59,6 +59,10 @@ public class ParsingService {
 			items.addAll(strategyChemistWarehouse(urls));
 		} else if (StringUtils.equals("POSTIE", strategy.toUpperCase())) {
 			items.addAll(strategyPostie(urls));
+		} else if (StringUtils.equals("IPPONDO", strategy.toUpperCase())) {
+			items.addAll(strategyIppondo(urls));
+		} else if (StringUtils.equals("DAIKOKU", strategy.toUpperCase())) {
+			items.addAll(strategyDaikoku(urls));
 		}
 		return items;
 	}
@@ -85,6 +89,101 @@ public class ParsingService {
 		return httpRequestGetItemChemistWarehouse(urls);
 	}
 
+	private List<Item> strategyIppondo(List<String> urls) {
+		return httpRequestGetItemIppondo(urls);
+	}
+
+	private List<Item> strategyDaikoku(List<String> urls) {
+		return httpRequestGetItemDaikoku(urls);
+	}
+
+	private List<Item> httpRequestGetItemIppondo(List<String> urls) {
+		List<Item> items = new ArrayList<>();
+		HttpRequest httpRequest;
+		String[] headers = new String[]{"user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" +
+				" (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "referrer", "https://ippondonz.co.nz/"};
+
+		for (String url : urls) {
+			try {
+				httpRequest = HttpRequest
+						.newBuilder(new URI(url))
+						.GET()
+						.headers(headers)
+						.build();
+				Document doc = Jsoup.parse(httpClient
+						.send(httpRequest, HttpResponse.BodyHandlers.ofString())
+						.body());
+				Elements elements = doc.getElementsByClass("price");
+				if (!CollectionUtils.isEmpty(elements)) {
+					if (StringUtils.equals(elements
+							.get(0)
+							.tagName(), "p")) {
+						String price = elements
+								.get(0)
+								.text()
+								.replace("$", "")
+								.trim();
+						String name = doc
+								.getElementsByClass("product_title")
+								.get(0)
+								.text();
+						Item item = new Item();
+						item.setPrice(price);
+						item.setName(name);
+						item.setUrl(url);
+						items.add(item);
+					}
+				}
+			} catch (URISyntaxException | InterruptedException | IOException use) {
+				log.error(use);
+			}
+		}
+		return items;
+	}
+
+	private List<Item> httpRequestGetItemDaikoku(List<String> urls) {
+		List<Item> items = new ArrayList<>();
+		HttpRequest httpRequest;
+		String[] headers = new String[]{"user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" +
+				" (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "referrer", "https://ippondonz.co.nz/"};
+
+		for (String url : urls) {
+			try {
+				httpRequest = HttpRequest
+						.newBuilder(new URI(url))
+						.GET()
+						.headers(headers)
+						.build();
+				Document doc = Jsoup.parse(httpClient
+						.send(httpRequest, HttpResponse.BodyHandlers.ofString())
+						.body());
+				Elements elements = doc.getElementsByClass("price");
+				if (!CollectionUtils.isEmpty(elements)) {
+					if (StringUtils.equals(elements
+							.get(0)
+							.tagName(), "p")) {
+						String price = elements
+								.get(0)
+								.text()
+								.replace("$", "")
+								.trim();
+						String name = doc
+								.getElementsByClass("product_title")
+								.get(0)
+								.text();
+						Item item = new Item();
+						item.setPrice(price);
+						item.setName(name);
+						item.setUrl(url);
+						items.add(item);
+					}
+				}
+			} catch (URISyntaxException | InterruptedException | IOException use) {
+				log.error(use);
+			}
+		}
+		return items;
+	}
 
 	private List<Item> httpRequestGetItemTheWarehouse(List<String> urls, String elementClass) {
 		List<Item> items = new ArrayList<>();
