@@ -28,8 +28,9 @@ public class MainService {
 	public static boolean alreadyRanToday = false;
 
 
-	List<String> kmartUrls = List.of("https://www.kmart.co.nz/product/short-sleeve-twist-front-midi-dress-s159474" +
-					"/?selectedSwatch=Black", "https://www.kmart.co.nz/product/basic-t-shirt-s145738/?selectedSwatch=Black",
+	List<String> kmartUrls = List.of("https://www.kmart.co.nz/product/basic-t-shirt-s145738/?selectedSwatch=Black",
+			"https://www.kmart.co.nz/product/short-sleeve-twist-front-midi-dress-s159474" +
+					"/?selectedSwatch=Black",
 			"https://www.kmart.co.nz/product/3-pack-opaque-tights-s113359/", "https://www.kmart.co" +
 					".nz/product/comfort-sneakers-with-elastic-laces-s141434/?selectedSwatch=Black", "https://www" +
 					".kmart.co.nz/product/food-and-fun-icons-mug-43146321/", "https://www.kmart.co" +

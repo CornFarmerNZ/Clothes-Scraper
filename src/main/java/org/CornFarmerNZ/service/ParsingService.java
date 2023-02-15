@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -68,12 +69,13 @@ public class ParsingService {
 	}
 
 	private List<Item> strategyPostie(List<String> urls) throws InterruptedException {
-		return chromeDriverGetItem(".product-header__heading", ".product-header__price.price", "", urls);
+		return chromeDriverGetItem(".product-header__heading", ".product-header__price.price", ".product" +
+				"-gallery__image.s-image img", urls);
 	}
 
 	private List<Item> strategyKmart(List<String> urls) throws InterruptedException {
-		return chromeDriverGetItem(".sc-bdvvtL.cTxaVe.product-title", ".sc-bdvvtL.bjrtyU.product-price-large", "",
-				urls);
+		return chromeDriverGetItem(".sc-bdvvtL.cTxaVe.product-title", ".sc-bdvvtL.bjrtyU.product-price-large",
+				".product-thumbnail", urls);
 	}
 
 	private List<Item> strategyTheWarehouse(List<String> urls) {
@@ -81,8 +83,7 @@ public class ParsingService {
 	}
 
 	private List<Item> strategyGlassons(List<String> urls) throws InterruptedException {
-		return chromeDriverGetItem(".product-summary__heading", ".product-summary__price.s-price",
-				".lazyautosizes.lazyloaded", urls);
+		return chromeDriverGetItem(".product-summary__heading", ".product-summary__price.s-price", ".lazyautosizes.lazyloaded", urls);
 	}
 
 	private List<Item> strategyChemistWarehouse(List<String> urls) {
@@ -90,18 +91,19 @@ public class ParsingService {
 	}
 
 	private List<Item> strategyIppondo(List<String> urls) {
-		return httpRequestGetItemIppondo(urls);
+		return httpRequestGetItemIppondoDaikoku(urls);
 	}
 
 	private List<Item> strategyDaikoku(List<String> urls) {
-		return httpRequestGetItemDaikoku(urls);
+		return httpRequestGetItemIppondoDaikoku(urls);
 	}
 
-	private List<Item> httpRequestGetItemIppondo(List<String> urls) {
+	private List<Item> httpRequestGetItemIppondoDaikoku(List<String> urls) {
 		List<Item> items = new ArrayList<>();
 		HttpRequest httpRequest;
-		String[] headers = new String[]{"user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" +
-				" (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "referrer", "https://ippondonz.co.nz/"};
+		String[] headers = new String[]{"user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
+				"AppleWebKit/537.36" + " (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "referrer", "https" +
+				"://google.co.nz"};
 
 		for (String url : urls) {
 			try {
@@ -128,50 +130,12 @@ public class ParsingService {
 								.get(0)
 								.text();
 						Item item = new Item();
-						item.setPrice(price);
-						item.setName(name);
-						item.setUrl(url);
-						items.add(item);
-					}
-				}
-			} catch (URISyntaxException | InterruptedException | IOException use) {
-				log.error(use);
-			}
-		}
-		return items;
-	}
-
-	private List<Item> httpRequestGetItemDaikoku(List<String> urls) {
-		List<Item> items = new ArrayList<>();
-		HttpRequest httpRequest;
-		String[] headers = new String[]{"user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" +
-				" (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "referrer", "https://ippondonz.co.nz/"};
-
-		for (String url : urls) {
-			try {
-				httpRequest = HttpRequest
-						.newBuilder(new URI(url))
-						.GET()
-						.headers(headers)
-						.build();
-				Document doc = Jsoup.parse(httpClient
-						.send(httpRequest, HttpResponse.BodyHandlers.ofString())
-						.body());
-				Elements elements = doc.getElementsByClass("price");
-				if (!CollectionUtils.isEmpty(elements)) {
-					if (StringUtils.equals(elements
-							.get(0)
-							.tagName(), "p")) {
-						String price = elements
-								.get(0)
-								.text()
-								.replace("$", "")
-								.trim();
-						String name = doc
-								.getElementsByClass("product_title")
-								.get(0)
-								.text();
-						Item item = new Item();
+						Elements images = doc.getElementsByAttribute("data-src");
+						if (!CollectionUtils.isEmpty(images)) {
+							item.setItemImageUrl(images
+									.get(0)
+									.attr("data-src"));
+						}
 						item.setPrice(price);
 						item.setName(name);
 						item.setUrl(url);
@@ -188,11 +152,9 @@ public class ParsingService {
 	private List<Item> httpRequestGetItemTheWarehouse(List<String> urls, String elementClass) {
 		List<Item> items = new ArrayList<>();
 		HttpRequest httpRequest;
-		String[] headers = new String[]{"user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" +
-				" (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "referrer", urls.get(0).substring(0,
-				urls
-						.get(0)
-						.indexOf("z/") + 1)};
+		String[] headers = new String[]{"user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" + " (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "referrer", urls.get(0).substring(0, urls
+				.get(0)
+				.indexOf("z/") + 1)};
 
 		for (String url : urls) {
 			try {
@@ -217,6 +179,12 @@ public class ParsingService {
 							.get(0)
 							.attr("product-name");
 					Item item = new Item();
+					Elements images = doc.getElementsByAttributeValue("data-testid", "product-thumbnail");
+					if (!CollectionUtils.isEmpty(images)) {
+						item.setItemImageUrl(images
+								.get(0)
+								.attr("src"));
+					}
 					item.setPrice(price);
 					item.setName(name);
 					item.setUrl(url);
@@ -234,11 +202,9 @@ public class ParsingService {
 	private List<Item> httpRequestGetItemChemistWarehouse(List<String> urls) {
 		List<Item> items = new ArrayList<>();
 		HttpRequest httpRequest;
-		String[] headers = new String[]{"user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" +
-				" (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "referrer", urls.get(0).substring(0,
-				urls
-						.get(0)
-						.indexOf("z/") + 1)};
+		String[] headers = new String[]{"user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" + " (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "referrer", urls.get(0).substring(0, urls
+				.get(0)
+				.indexOf("z/") + 1)};
 
 		for (String url : urls) {
 			try {
@@ -251,6 +217,13 @@ public class ParsingService {
 						.send(httpRequest, HttpResponse.BodyHandlers.ofString())
 						.body());
 				Item item = new Item();
+				String itemImageUrl =
+						doc
+								.getElementsByClass("hero_image zoomer_harvey product-thumbnail")
+								.get(0)
+								.attr("src2")
+								.replace("200.", "800.");
+				item.setItemImageUrl(itemImageUrl);
 				String name = doc
 						.getElementsByTag("title")
 						.get(0)
@@ -289,11 +262,15 @@ public class ParsingService {
 		for (String url : urls) {
 			Item item = new Item();
 			driver.get(url);
-			Thread.sleep(random.nextInt(1502, 3507));
+			driver
+					.manage()
+					.timeouts()
+					.implicitlyWait(Duration.ofSeconds(2));
 			List<WebElement> title = new ArrayList<>(driver.findElements(By.cssSelector(cssTitle)));
 			List<WebElement> price = new ArrayList<>(driver.findElements(By.cssSelector(cssPrice)));
 			List<WebElement> images = StringUtils.isNotBlank(cssImage) ?
-					new ArrayList<>(driver.findElements(By.cssSelector(cssImage))) : new ArrayList<>();
+					new ArrayList<>(driver.findElements(By.cssSelector(cssImage))) :
+					new ArrayList<>();
 			if (!CollectionUtils.isEmpty(title)) {
 				item.setName(StringUtils.isNotBlank(title
 						.get(0)
