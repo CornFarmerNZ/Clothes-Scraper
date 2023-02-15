@@ -3,14 +3,18 @@ package org.CornFarmerNZ.service;
 import lombok.extern.log4j.Log4j2;
 import org.CornFarmerNZ.constants.Store;
 import org.CornFarmerNZ.model.Item;
-import org.CornFarmerNZ.repository.ItemRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Log4j2
@@ -19,11 +23,12 @@ public class MainService {
 	@Autowired
 	ParsingService parsingService;
 
-	@Autowired
-	ItemRepository itemRepository;
 
 	@Autowired
 	FileWritingService fileWritingService;
+
+	@Autowired
+	DynamoDbEnhancedClient enhancedClient;
 
 	public static boolean alreadyRanToday = false;
 
@@ -58,50 +63,58 @@ public class MainService {
 
 	@Scheduled(cron = "0 0 12 * * *", zone = "Pacific/Auckland")
 	public void start() throws InterruptedException {
-		List<Item> allItems = new ArrayList<>();
+		List<Item> newItems = new ArrayList<>();
 		//chrome driver
-		allItems.addAll(parsingService.getItems(kmartUrls, Store.KMART.toString()));
-		allItems.addAll(parsingService.getItems(glassonsUrls, Store.GLASSONS.toString()));
-		allItems.addAll(parsingService.getItems(postieUrls, Store.POSTIE.toString()));
+		newItems.addAll(parsingService.getItems(kmartUrls, Store.KMART.toString()));
+		newItems.addAll(parsingService.getItems(glassonsUrls, Store.GLASSONS.toString()));
+		newItems.addAll(parsingService.getItems(postieUrls, Store.POSTIE.toString()));
 		//api calls
-		allItems.addAll(parsingService.getItems(theWarehouseUrls, Store.THE_WAREHOUSE.toString()));
-		allItems.addAll(parsingService.getItems(chemistWarehouseUrls, Store.CHEMIST_WAREHOUSE.toString()));
-		allItems.addAll(parsingService.getItems(ippondoUrls, Store.IPPONDO.toString()));
-		allItems.addAll(parsingService.getItems(daikokuUrls, Store.DAIKOKU.toString()));
+		newItems.addAll(parsingService.getItems(theWarehouseUrls, Store.THE_WAREHOUSE.toString()));
+		newItems.addAll(parsingService.getItems(chemistWarehouseUrls, Store.CHEMIST_WAREHOUSE.toString()));
+		newItems.addAll(parsingService.getItems(ippondoUrls, Store.IPPONDO.toString()));
+		newItems.addAll(parsingService.getItems(daikokuUrls, Store.DAIKOKU.toString()));
 
-//		fileWritingService.writeToCsv(allItems);
-		log.info(allItems);
-		List<Item> oldItems = itemRepository.findAll();
-		int updatedCounter = 0;
-		if (!alreadyRanToday) {
-			// adds price of today's items to the existing item in DB.
-			for (Item oldItem : oldItems) {
-				for (Item newItem : allItems) {
-					if (StringUtils.equals(oldItem.getUrl(), newItem.getUrl())) {
-						oldItem.setPrice(oldItem.getPrice() + "," + newItem.getPrice());
-						updatedCounter++;
+		TableSchema<Item> itemTableSchema = TableSchema.fromBean(Item.class);
+		DynamoDbTable<Item> itemTable = enhancedClient.table("clothes_scraper", TableSchema.fromBean(Item.class));
+
+		try {
+			newItems.removeIf(item -> {
+				return StringUtils.isBlank(item.getName());
+			});
+
+			newItems.forEach(item -> {
+				item.setId(UUID
+						.nameUUIDFromBytes(item
+								.getUrl()
+								.getBytes())
+						.toString());
+			});
+
+			List<Item> oldItems =
+					newItems
+							.stream()
+							.map(item -> {
+								return
+										itemTable.getItem(Key
+												.builder()
+												.partitionValue(item.getId())
+												.build());
+							})
+							.toList();
+			for (Item newItem : newItems) {
+				for (Item oldItem : oldItems) {
+					if (newItem.equals(oldItem)) {
+						newItem
+								.getPrices()
+								.putAll(oldItem.getPrices());
 					}
 				}
 			}
+			newItems.forEach(itemTable::putItem);
+		} catch (Exception e) {
+			log.error("Error adding item");
 		}
-		System.out.println("breakpoint");
-		// adds new items to db.
-		int addedCounter = 0;
-		for (Item newItem : allItems) {
-			if (!oldItems.contains(newItem)) {
-				if (StringUtils.isNotBlank(newItem.getName())) {
-					oldItems.add(newItem);
-					addedCounter++;
-				}
-			}
-		}
-
-
-		System.out.println("breakpoint");
-		itemRepository.saveAll(oldItems);
-		log.info("Items updated: " + updatedCounter);
-		log.info("New items added: " + addedCounter);
-
+		System.out.println("break");
 	}
 
 	public void run() {

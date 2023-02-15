@@ -22,6 +22,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -136,7 +137,9 @@ public class ParsingService {
 									.get(0)
 									.attr("data-src"));
 						}
-						item.setPrice(price);
+						item
+								.getPrices()
+								.put(LocalDate.now(), price);
 						item.setName(name);
 						item.setUrl(url);
 						items.add(item);
@@ -179,13 +182,15 @@ public class ParsingService {
 							.get(0)
 							.attr("product-name");
 					Item item = new Item();
-					Elements images = doc.getElementsByAttributeValue("data-testid", "product-thumbnail");
+					Elements images = doc.getElementsByClass("img-fluid");
 					if (!CollectionUtils.isEmpty(images)) {
 						item.setItemImageUrl(images
 								.get(0)
 								.attr("src"));
 					}
-					item.setPrice(price);
+					item
+							.getPrices()
+							.put(LocalDate.now(), price);
 					item.setName(name);
 					item.setUrl(url);
 					items.add(item);
@@ -241,7 +246,9 @@ public class ParsingService {
 									.get(0)
 									.text()
 									.lastIndexOf("$") + 1);
-					item.setPrice(price);
+					item
+							.getPrices()
+							.put(LocalDate.now(), price);
 				}
 				items.add(item);
 			} catch (URISyntaxException | InterruptedException | IOException use) {
@@ -279,16 +286,18 @@ public class ParsingService {
 						.getText() : "n/a");
 			}
 			if (!CollectionUtils.isEmpty(price)) {
-				item.setPrice(StringUtils.isNotBlank(price
-						.get(0)
-						.getText()
-						.substring(1)) ? price
-						.get(0)
-						.getText()
-						.substring(price
+				item
+						.getPrices()
+						.put(LocalDate.now(), StringUtils.isNotBlank(price
 								.get(0)
 								.getText()
-								.lastIndexOf("$") + 1) : "0.00");
+								.substring(1)) ? price
+								.get(0)
+								.getText()
+								.substring(price
+										.get(0)
+										.getText()
+										.lastIndexOf("$") + 1) : "0.00");
 			}
 			if (!CollectionUtils.isEmpty(images)) {
 				item.setItemImageUrl(images

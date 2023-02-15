@@ -21,7 +21,7 @@ public class FileWritingService {
 			for (Item item : items) {
 				bw.write(item.getName() + ",");
 				bw.write(item.getUrl() + ",");
-				bw.write("" + item.getPrice() + "\n");
+				bw.write("" + item.getPrices() + "\n");
 			}
 			bw.close();
 		} catch (IOException ioe) {

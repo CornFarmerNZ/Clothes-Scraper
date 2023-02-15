@@ -1,35 +1,36 @@
 package org.CornFarmerNZ.model;
 
 import lombok.*;
-import org.apache.commons.lang3.builder.EqualsExclude;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 
-import javax.persistence.*;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
-@Getter
-@Setter
 @ToString
-@Entity
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@DynamoDbBean
 public class Item {
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "ID")
-	@EqualsExclude
-	int id;
-	@Column(name = "ITEM_PRICE")
-	@EqualsExclude
-	String price;
-	@Column(name = "ITEM_NAME")
-	@EqualsAndHashCode.Include
-	String name;
-	@Column(name = "ITEM_URL")
-	@EqualsAndHashCode.Include
-	String url;
-	@Column(name = "ITEM_IMAGE_URL")
-	String itemImageUrl;
 
+	public Item() {
+		prices = new HashMap<>();
+	}
+
+	@Getter(onMethod = @__({@DynamoDbPartitionKey}))
+	private String id;
+	@Getter
+	private Map<LocalDate, String> prices;
+	@EqualsAndHashCode.Include
+	@Getter
+	private String name;
+	@EqualsAndHashCode.Include
+	@Getter
+	private String url;
+	@Getter
+	private String itemImageUrl;
 
 }
