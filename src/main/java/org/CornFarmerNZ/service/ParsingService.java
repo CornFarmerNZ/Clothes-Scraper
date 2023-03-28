@@ -8,13 +8,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,22 +32,15 @@ public class ParsingService {
 
 	@Autowired
 	Random random;
-
-	@Autowired
-	ChromeOptions chromeOptions;
-
 	@Autowired
 	HttpClient httpClient;
-
-	private static RemoteWebDriver driver;
-
-	@PostConstruct
-	private void init() {
-		driver = new RemoteWebDriver(chromeOptions);
-	}
+	private RemoteWebDriver driver;
+	@Autowired
+	LocalDate currentDate;
 
 
-	public List<Item> getItems(List<String> urls, String strategy) throws InterruptedException {
+	public List<Item> getItems(List<String> urls, String strategy, RemoteWebDriver driver) throws InterruptedException {
+		this.driver = driver;
 		List<Item> items = new ArrayList<>();
 		if (StringUtils.equals("KMART", strategy.toUpperCase())) {
 			items.addAll(strategyKmart(urls));
@@ -139,7 +130,7 @@ public class ParsingService {
 						}
 						item
 								.getPrices()
-								.put(LocalDate.now(), price);
+								.put(currentDate, price);
 						item.setName(name);
 						item.setUrl(url);
 						items.add(item);
@@ -190,7 +181,7 @@ public class ParsingService {
 					}
 					item
 							.getPrices()
-							.put(LocalDate.now(), price);
+							.put(currentDate, price);
 					item.setName(name);
 					item.setUrl(url);
 					items.add(item);
@@ -248,7 +239,7 @@ public class ParsingService {
 									.lastIndexOf("$") + 1);
 					item
 							.getPrices()
-							.put(LocalDate.now(), price);
+							.put(currentDate, price);
 				}
 				items.add(item);
 			} catch (URISyntaxException | InterruptedException | IOException use) {
@@ -288,7 +279,7 @@ public class ParsingService {
 			if (!CollectionUtils.isEmpty(price)) {
 				item
 						.getPrices()
-						.put(LocalDate.now(), StringUtils.isNotBlank(price
+						.put(currentDate, StringUtils.isNotBlank(price
 								.get(0)
 								.getText()
 								.substring(1)) ? price

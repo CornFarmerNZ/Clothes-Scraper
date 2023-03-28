@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.net.http.HttpClient;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -24,6 +26,11 @@ public class ClothesConfig {
 	@Bean
 	Random random() {
 		return new Random();
+	}
+
+	@Bean
+	LocalDate currentTime() {
+		return LocalDate.now(ZoneId.of("Pacific/Auckland"));
 	}
 
 	@Bean

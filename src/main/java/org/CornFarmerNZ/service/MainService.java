@@ -4,6 +4,8 @@ import lombok.extern.log4j.Log4j2;
 import org.CornFarmerNZ.model.Item;
 import org.CornFarmerNZ.model.Url;
 import org.apache.commons.lang3.StringUtils;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,19 +26,25 @@ public class MainService {
 	@Autowired
 	ParsingService parsingService;
 
-
 	@Autowired
 	FileWritingService fileWritingService;
 
 	@Autowired
 	DynamoDbEnhancedClient enhancedClient;
 
-	public static boolean alreadyRanToday = false;
+	@Autowired
+	ChromeOptions chromeOptions;
+
+	private static RemoteWebDriver driver;
+	private static final String DRIVER_URL = "http://localhost:4444";
 
 	@Scheduled(cron = "0 0 12 * * *", zone = "Pacific/Auckland")
 	public void start() throws InterruptedException {
-
-		TableSchema<Url> urlTableSchema = TableSchema.fromBean(Url.class);
+		try {
+			driver = new RemoteWebDriver(new URL(DRIVER_URL), chromeOptions);
+		} catch (Exception e) {
+			log.error("Error creating remote web driver for url: " + DRIVER_URL, e);
+		}
 		DynamoDbTable<Url> urlTable = enhancedClient.table("websites_scrape", TableSchema.fromBean(Url.class));
 		long itemCount = urlTable
 				.describeTable()
@@ -60,14 +69,14 @@ public class MainService {
 							newItems.addAll(parsingService.getItems(List.of(url.getUrl()),
 									url
 											.getStore()
-											.toString()));
+											.toString(), driver));
 						}
 					} catch (InterruptedException e) {
 						log.error("Error getting item", e);
 					}
 				});
+		
 
-		TableSchema<Item> itemTableSchema = TableSchema.fromBean(Item.class);
 		DynamoDbTable<Item> itemTable = enhancedClient.table("clothes_scraper", TableSchema.fromBean(Item.class));
 
 		try {
@@ -108,10 +117,6 @@ public class MainService {
 		} catch (Exception e) {
 			log.error("Error adding item");
 		}
-		System.out.println("break");
 	}
 
-	public void run() {
-
-	}
 }
