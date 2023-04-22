@@ -7,7 +7,7 @@ An example of how this pricing data could be used: https://price-nz.herokuapp.co
 
 Currently supported stores: KMART, GLASSONS, THE_WAREHOUSE, CHEMIST_WAREHOUSE, AMAZON, POSTIE, IPPONDO, DAIKOKU
 
-Store URLSs and prices are stored in AWS DynamoDB databases.
+Uses AWS DynamoDB databases to retrieve website URLs and store pricing data.
 
 # To run (Docker):
 
