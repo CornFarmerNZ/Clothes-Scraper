@@ -1,6 +1,7 @@
 package org.CornFarmerNZ.service;
 
 import lombok.extern.log4j.Log4j2;
+import org.CornFarmerNZ.config.AppConfig;
 import org.CornFarmerNZ.model.Item;
 import org.CornFarmerNZ.model.Url;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +35,9 @@ public class MainService {
 
 	@Autowired
 	ChromeOptions chromeOptions;
+
+	@Autowired
+	AppConfig appConfig;
 
 	private static RemoteWebDriver driver;
 	private static final String DRIVER_URL = "http://localhost:4444";
@@ -75,9 +79,9 @@ public class MainService {
 						log.error("Error getting item", e);
 					}
 				});
-		
 
-		DynamoDbTable<Item> itemTable = enhancedClient.table("clothes_scraper", TableSchema.fromBean(Item.class));
+
+		DynamoDbTable<Item> itemTable = enhancedClient.table(appConfig.getTable(), TableSchema.fromBean(Item.class));
 
 		try {
 			newItems.removeIf(item -> {

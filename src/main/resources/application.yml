@@ -1,0 +1,2 @@
+dynamodb:
+  table: "clothes_scraper"

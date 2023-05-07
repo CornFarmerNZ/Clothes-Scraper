@@ -6,6 +6,12 @@
       "sourceType": "org.CornFarmerNZ.config.AppConfig"
     }
   ],
-  "properties": [],
+  "properties": [
+    {
+      "name": "app.table",
+      "type": "java.lang.String",
+      "sourceType": "org.CornFarmerNZ.config.AppConfig"
+    }
+  ],
   "hints": []
 }
