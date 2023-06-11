@@ -30,7 +30,8 @@ public class ClothesConfig {
 
 	@Bean
 	LocalDate currentTime() {
-		return LocalDate.now(ZoneId.of("Pacific/Auckland"));
+		return LocalDate
+				.now(ZoneId.of("Pacific/Auckland"));
 	}
 
 	@Bean

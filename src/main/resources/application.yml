@@ -1,2 +1,5 @@
 dynamodb:
   table: "clothes_scraper"
+spring:
+  application:
+    name: "clothes_scraper"
